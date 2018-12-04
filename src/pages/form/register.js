@@ -1,11 +1,40 @@
 import React from 'react'
 import { Card, Form, Button, Input, Checkbox, Radio, Select, Switch, DatePicker, TimePicker, Upload, Icon, InputNumber } from 'antd'
+import moment from 'moment'
 
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
+const TextArea = Input.TextArea;
+
+function getBase64(img, callback) {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => callback(reader.result));
+    reader.readAsDataURL(img);
+}
 
 class FormRegister extends React.Component {
+
+    state = { }
+    handleChange = (info) => {
+        if (info.file.status === 'uploading') {
+          this.setState({ loading: true });
+          return;
+        }
+        if (info.file.status === 'done') {
+          // Get this url from response in real world.
+          getBase64(info.file.originFileObj, imageUrl => this.setState({
+            imageUrl,
+            loading: false,
+          }));
+        }
+    }
+
+    handleSubmit = () => {
+        let userInfo = this.props.form.getFieldDecorator();
+        console.log(userInfo)
+    }
+
     render() {
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
@@ -16,6 +45,15 @@ class FormRegister extends React.Component {
             wrapperCol: {
                 xs: 24,
                 sm: 8
+            }
+        }
+        const offsetLayout = {
+            wrapperCol: {
+                xs: 24,
+                sm: {
+                    span: 12, 
+                    offset: 4
+                }
             }
         }
         return (
@@ -94,6 +132,71 @@ class FormRegister extends React.Component {
                                     </Select>
                                 )
                             }
+                        </FormItem>
+                        <FormItem label="是否已婚" {...formItemLayout}>
+                            {
+                                getFieldDecorator('isMarried', {
+                                    valuePropName: 'checked',
+                                    initialValue: true
+                                })(
+                                    <Switch />
+                                )
+                            }
+                        </FormItem>
+                        <FormItem label="生日" {...formItemLayout}>
+                            {
+                                getFieldDecorator('birthday', {
+                                    initialValue: moment('2018-12-04')
+                                })(
+                                    <DatePicker />
+                                )
+                            }
+                        </FormItem>
+                        <FormItem label="联系地址" {...formItemLayout}>
+                            {
+                                getFieldDecorator('address', {
+                                    initialValue: '南京市江宁区金陵科技学院'
+                                })(
+                                    <TextArea 
+                                        autosize = {
+                                            {
+                                                minRows: 4, maxRows: 6
+                                            }
+                                        }
+                                    />
+                                )
+                            }
+                        </FormItem>
+                        <FormItem label="早起时间" {...formItemLayout}>
+                            {
+                                getFieldDecorator('time')(
+                                    <TimePicker />
+                                )
+                            }
+                        </FormItem>
+                        <FormItem label="头像" {...formItemLayout}>
+                            {
+                                getFieldDecorator('userImg')(
+                                    <Upload
+                                        listType="picture"
+                                        showUploadList={false}
+                                        action="//jsonplaceholder.typicode.com/posts/"
+                                        onChange={this.handleChange}
+                                    >
+                                    { this.state.imageUrl ? <img src={this.state.imageUrl} alt="" /> : <Icon type="plus" />}
+                                    </Upload>
+                                )
+                            }
+                        </FormItem>
+                        <FormItem {...offsetLayout}>
+                            {
+                                getFieldDecorator('userImg')(
+                                    <Checkbox>我已经阅读过<a href="#">协议</a></Checkbox>
+                                )
+                            }
+                        </FormItem>
+                        <FormItem {...offsetLayout}>
+                            <Button type="primary" onClick={this.handleSubmit}>注册</Button>
                         </FormItem>
                     </Form>
                 </Card>
